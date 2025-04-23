@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv
 from data_collectors.restaurant_collector import RestaurantCollector
-from data_collectors.article_collector import get_review_articles, save_articles_to_json
+from data_collectors.article_collector import get_review_articles
 import json
+
 import google.generativeai as genai
 
 # Load environment variables
@@ -39,22 +40,24 @@ def analyze_with_gemini(input_to_LLM: str) -> str:
     4. Include any relevant insights from professional articles
     5. Note any specific preparation details or variations mentioned
 
-    Format your response as:
+    Format your response as follows (NO MARKDOWN FORMATTING):
     
     Top 3 Most Recommended Dishes:
     
     1. [Dish Name]
-    - Description of why it's recommended (mention sources and ratings)
-    - Review Quote: "[exact quote]" (5-star review)
-    - Article Insight: "[relevant quote from article]"
-    [Add another high-rated quote if available]
+    Description of why it's recommended: [description]
+    Review Quote: "[exact quote]" (5-star review)
+    Article Insight: "[relevant quote from article]"
     
     [Repeat for dishes 2 and 3]
 
-    Only include dishes that are specifically mentioned in the sources.
-    Prioritize dishes that are praised in high-rated reviews (4-5 stars) and/or mentioned in professional articles.
-    Use exact quotes from both reviews and articles when citing recommendations.
-    Do not use the same quote for multiple dishes.
+    Important Formatting Rules:
+    - Do not use any markdown formatting (no **, *, etc.)
+    - Do not use bullet points
+    - Use plain text only
+    - Keep the format consistent across all dishes
+    - Use exact quotes from both reviews and articles
+    - Do not use the same quote for multiple dishes
 
     Input to analyze:
     {input_to_LLM}
@@ -128,59 +131,57 @@ def save_restaurant_data(restaurant_data):
     return filename
 
 def main():
-    # You can expand this to handle multiple restaurants
-    restaurants_to_process = [
-        {
-            "name": "Din Tai Fung",
-            "address": "115 W 3rd St, Los Angeles, CA 90013",
-            "location": "Los Angeles, CA"
-        }
-    ]
+    print("Welcome to Dishcovery - Restaurant Review Analyzer!")
+    print("Please enter the restaurant details:")
     
-    for restaurant in restaurants_to_process:
-        try:
-            print(f"\nProcessing: {restaurant['name']}")
-            print(f"Address: {restaurant['address']}")
-            
-            # Step 1: Collect restaurant reviews and basic information
-            print("\nCollecting restaurant reviews and information...")
-            restaurant_data = collect_restaurant_reviews(restaurant['name'], restaurant['address'])
-            
-            # Step 2: Collect review articles
-            print("\nCollecting review articles...")
-            articles = collect_restaurant_articles(restaurant['name'], restaurant['location'])
-            
-            # Add articles to restaurant data
-            article_contents = ""
-            for article in articles:
-                article_contents += (article['content'])
-            
-            restaurant_data['articles'] = article_contents
-            
-            
-            # Print formatted information
-            #print("Restaurant Data: ", restaurant_data)
+    # Get user input
+    restaurant_name = input("Restaurant Name: ")
+    address = input("Address: ")
+    location = input("Location (City, State): ")
+    
+    restaurant = {
+        "name": restaurant_name,
+        "address": address,
+        "location": location
+    }
+    
+    try:
+        print(f"\nProcessing: {restaurant['name']}")
+        print(f"Address: {restaurant['address']}")
+        
+        # Step 1: Collect restaurant reviews and basic information
+        print("\nCollecting restaurant reviews and information...")
+        restaurant_data = collect_restaurant_reviews(restaurant['name'], restaurant['address'])
+        
+        # Step 2: Collect review articles
+        print("\nCollecting review articles...")
+        articles = collect_restaurant_articles(restaurant['name'], restaurant['location'])
+        
+        # Add articles to restaurant data
+        article_contents = ""
+        for article in articles:
+            article_contents += (article['content'])
+        
+        restaurant_data['articles'] = article_contents
+        
+        input_to_LLM = f"""
+        Restaurant Name: {restaurant['name']}
+        Restaurant Reviews: {restaurant_data['reviews']}
+        Restaurant Articles: {article_contents}
+        """
+        
+        # Add recommended dishes analysis
+        restaurant_data['recommended_dishes'] = analyze_with_gemini(input_to_LLM)
+        
+        print("\nRecommended Dishes Analysis:")
+        print(restaurant_data['recommended_dishes'])
 
-            input_to_LLM = f"""
-            Restaurant Name: {restaurant['name']}
-            Restaurant Reviews: {restaurant_data['reviews']}
-            Restaurant Articles: {article_contents}
-            """
-
-            # print("Input to LLM: ", input_to_LLM)
-            
-            # Add recommended dishes analysis
-            restaurant_data['recommended_dishes'] = analyze_with_gemini(input_to_LLM)
-            
-            print("Restaurant Data: ", restaurant_data['recommended_dishes'])
-
-            # Save to individual JSON file
-            saved_filename = save_restaurant_data(restaurant_data)
-            print(f"\nData has been saved to {saved_filename}")
-            
-        except Exception as e:
-            print(f"Error processing {restaurant['name']}: {str(e)}")
-            continue
+        # Save to individual JSON file
+        saved_filename = save_restaurant_data(restaurant_data)
+        print(f"\nData has been saved to {saved_filename}")
+        
+    except Exception as e:
+        print(f"Error processing {restaurant['name']}: {str(e)}")
 
 if __name__ == "__main__":
     main() 

@@ -103,7 +103,7 @@ def get_review_articles(restaurant_name: str, location: str) -> List[Dict[str, s
     params = {
         "api_key": serp_api_key,
         "q": search_query,
-        "num": 5,  # Number of results to return
+        "num": 10,  # Number of results to return
         "tbm": "nws",  # Search news articles
         "tbs": "qdr:y"  # Results from the past year
     }
