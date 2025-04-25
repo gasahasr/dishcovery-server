@@ -79,7 +79,7 @@ def get_article_text(url: str) -> Optional[Dict[str, str]]:
 
 def get_review_articles(restaurant_name: str, location: str) -> List[Dict[str, str]]:
     """
-    Fetches review articles for a restaurant using SERP API and extracts their content.
+    Fetches review articles for a restaurant using Google Light Search API and extracts their content.
     
     Args:
         restaurant_name (str): Name of the restaurant
@@ -94,22 +94,25 @@ def get_review_articles(restaurant_name: str, location: str) -> List[Dict[str, s
         raise ValueError("SERP API key not found in environment variables")
 
     # Construct the search query
-    search_query = f"{restaurant_name} {location} restaurant review"
+    search_query = f"{restaurant_name} + {location} + food + articles + blog"
+    print(f"\nSearching for articles with query: {search_query}")
     
-    # SERP API endpoint
+    # Google Light Search API endpoint
     serp_url = "https://serpapi.com/search"
     
-    # Parameters for the SERP API call
+    # Parameters for the Google Light Search API call
     params = {
         "api_key": serp_api_key,
+        "engine": "google_light",  # Use Google Light Search engine
         "q": search_query,
         "num": 10,  # Number of results to return
-        "tbm": "nws",  # Search news articles
-        "tbs": "qdr:y"  # Results from the past year
+        "google_domain": "google.com",
+        "device": "desktop"
     }
     
     try:
         # Make the API call to SERP
+        print("Making API call to Google Light Search...")
         response = requests.get(serp_url, params=params)
         response.raise_for_status()
         search_results = response.json()
@@ -117,33 +120,64 @@ def get_review_articles(restaurant_name: str, location: str) -> List[Dict[str, s
         # Process each search result
         articles = []
         
-        for result in search_results.get('news_results', []):
+        # Extract organic results
+        print(f"\nFound {len(search_results.get('organic_results', []))} organic results")
+        for result in search_results.get('organic_results', []):
             article_url = result.get('link')
             if not article_url:
                 continue
                 
+            print(f"\nProcessing article: {result.get('title')}")
+            print(f"URL: {article_url}")
+            
             # Get the full article text using existing function
             article_content = get_article_text(article_url)
             
             if article_content:
                 # Add metadata from SERP results
                 article_content.update({
-                    'source': result.get('source', 'Unknown'),
+                    'source': result.get('displayed_link', 'Unknown'),
                     'published_date': result.get('date', 'Unknown'),
                     'snippet': result.get('snippet', ''),
                     'restaurant_name': restaurant_name,
-                    'location': location
+                    'location': location,
+                    'position': result.get('position'),
+                    'extensions': result.get('extensions', []),
+                    'rating': result.get('rating'),
+                    'reviews': result.get('reviews')
                 })
                 
                 articles.append(article_content)
+                print(f"Successfully processed article: {article_content['title']}")
+            else:
+                print(f"Failed to extract content from: {article_url}")
         
+        # Add knowledge graph data if available
+        knowledge_graph = search_results.get('knowledge_graph', {})
+        if knowledge_graph:
+            print("\nAdding knowledge graph data...")
+            articles.append({
+                'title': knowledge_graph.get('title', ''),
+                'content': knowledge_graph.get('description', ''),
+                'source': 'Knowledge Graph',
+                'rating': knowledge_graph.get('rating'),
+                'reviews': knowledge_graph.get('reviews'),
+                'address': knowledge_graph.get('address'),
+                'phone': knowledge_graph.get('phone'),
+                'hours': knowledge_graph.get('hours'),
+                'restaurant_name': restaurant_name,
+                'location': location
+            })
+            print("Knowledge graph data added successfully")
+        
+        print(f"\nTotal articles collected: {len(articles)}")
         return articles
     
     except requests.RequestException as e:
-        logging.error(f"Error making SERP API request: {str(e)}")
+        print(f"Error making Google Light Search API request: {str(e)}")
         return []
     except Exception as e:
-        logging.error(f"Error processing search results: {str(e)}")
+        print(f"Error processing search results: {str(e)}")
         return []
 
 def save_articles_to_json(articles: List[Dict[str, str]], restaurant_name: str):

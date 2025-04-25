@@ -158,9 +158,12 @@ def main():
         articles = collect_restaurant_articles(restaurant['name'], restaurant['location'])
         
         # Add articles to restaurant data
-        article_contents = ""
-        for article in articles:
-            article_contents += (article['content'])
+        if len(articles) <= 0:
+            print("No articles found for this restaurant")
+        else:
+            article_contents = ""
+            for article in articles:
+                article_contents += (article['content'])
         
         restaurant_data['articles'] = article_contents
         
