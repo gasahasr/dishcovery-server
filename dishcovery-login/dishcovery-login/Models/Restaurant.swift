@@ -6,6 +6,7 @@ struct Restaurant: Identifiable {
     let userId: String
     let placeId: String
     let recommendedDishes: String
+    let location: String
     let timestamp: Date
     
     init(id: String = UUID().uuidString,
@@ -13,12 +14,14 @@ struct Restaurant: Identifiable {
          userId: String,
          placeId: String = "",
          recommendedDishes: String = "",
+         location: String = "",
          timestamp: Date = Date()) {
         self.id = id
         self.name = name
         self.userId = userId
         self.placeId = placeId
         self.recommendedDishes = recommendedDishes
+        self.location = location
         self.timestamp = timestamp
     }
 }

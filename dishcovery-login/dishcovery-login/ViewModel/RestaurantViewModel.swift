@@ -22,10 +22,17 @@ class RestaurantViewModel: ObservableObject {
             recommendedDishes = response.recommendedDishes
             placeId = response.placeId
             
-            // Save to Firebase with upsert operation using the Yelp place ID
+            // Save to both Firebase collections with real data
             firestoreManager.upsertRestaurant(
                 name: name,
                 userId: userId,
+                placeId: placeId,
+                recommendedDishes: recommendedDishes
+            )
+            
+            firestoreManager.upsertRestaurantDetails(
+                name: name,
+                location: location,
                 placeId: placeId,
                 recommendedDishes: recommendedDishes
             )

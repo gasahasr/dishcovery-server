@@ -19,35 +19,34 @@ def analyze_with_gemini(input_to_LLM: str) -> str:
     # Create the model
     model = genai.GenerativeModel('gemini-2.0-flash')    
     
-    # Updated prompt to consider both reviews and articles
+    # Updated prompt to focus on dishes and their unique qualities
     prompt = f"""
-    You are a culinary expert analyzing restaurant reviews and articles. Your task is to identify the top 3 most recommended dishes from these sources.
+    You are a culinary expert analyzing restaurant dishes. Your task is to identify the top 3 most recommended dishes and highlight what makes them special.
 
     Important Guidelines:
-    1. Consider both customer reviews and professional articles
-    2. Give more weight to reviews with higher ratings (4 or 5 stars)
-    3. Consider professional articles as expert opinions
-    4. Look for consensus between multiple sources
-    5. Note any specific preparation details or variations mentioned
+    1. Focus on the unique qualities and ingredients of each dish
+    2. Highlight what makes each dish stand out
+    3. Mention any special preparation methods or techniques
+    4. Note any signature ingredients or flavor combinations
+    5. Keep descriptions concise and focused on the dish itself
 
     For each dish:
     1. Name the dish
-    2. Explain why it's highly recommended, noting:
-       - The ratings of supporting reviews
-       - Whether it's mentioned in professional articles
-       - Any consensus between sources
-    3. Include 1-2 direct quotes from high-rated reviews that best describe the dish
-    4. Include any relevant insights from professional articles
-    5. Note any specific preparation details or variations mentioned
+    2. Describe what makes it special:
+       - Key ingredients and their quality
+       - Unique preparation methods
+       - Signature flavors or combinations
+       - What sets it apart from similar dishes
+    3. Include one brief quote that best captures the essence of the dish
+    4. Note any specific details about how it's served or presented
 
     Format your response as follows (NO MARKDOWN FORMATTING):
     
     Top 3 Most Recommended Dishes:
     
     1. [Dish Name]
-    Description of why it's recommended: [description]
-    Review Quote: "[exact quote]" (5-star review)
-    Article Insight: "[relevant quote from article]"
+    What makes it special: [description focusing on ingredients, preparation, and unique qualities]
+    Key Quote: "[one brief, impactful quote that captures the essence]"
     
     [Repeat for dishes 2 and 3]
 
@@ -56,8 +55,8 @@ def analyze_with_gemini(input_to_LLM: str) -> str:
     - Do not use bullet points
     - Use plain text only
     - Keep the format consistent across all dishes
-    - Use exact quotes from both reviews and articles
-    - Do not use the same quote for multiple dishes
+    - Focus on the dish itself, not the reviews or articles
+    - Keep descriptions concise and focused
 
     Input to analyze:
     {input_to_LLM}
