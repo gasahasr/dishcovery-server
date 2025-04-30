@@ -1,6 +1,18 @@
+# Core
+setuptools>=68.0.0
+wheel>=0.42.0
+
+
+
+# App dependencies
 flask==3.0.2
 flask-cors==4.0.0
 requests==2.31.0
 beautifulsoup4==4.12.3
 python-dotenv==1.0.1
-google-generativeai==0.3.2 
+google-generativeai==0.3.2
+grpcio==1.62.1
+
+
+
+
