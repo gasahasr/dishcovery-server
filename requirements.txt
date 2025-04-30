@@ -1,7 +1,7 @@
 # Core
 setuptools>=68.0.0
 wheel>=0.42.0
-
+gunicorn
 
 
 # App dependencies
