@@ -1,8 +1,12 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "."))  # or '..' if needed
+
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from data_collectors.restaurant_collector import RestaurantCollector
 from data_collectors.article_collector import get_review_articles
-import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 from datetime import datetime
